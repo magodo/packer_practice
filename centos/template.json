@@ -1,0 +1,51 @@
+{
+    "variables": {
+        "disk_size": "20000",
+        "db_type": "postgresql-9-6"
+    },
+
+    "builders":
+    [
+        {
+            "name": "centos-7.6-{{ user `db_type`}}-x86_64",
+            "type": "qemu",
+            "format": "qcow2",
+            "accelerator": "kvm",
+            "disk_size": "{{ user `disk_size`}}",
+
+            "iso_url": "http://mirrors.163.com/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso",
+            "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
+            "iso_checksum_type": "sha256",
+
+            "http_directory": "http",
+
+            "ssh_username": "root",
+            "ssh_password": "123",
+            "ssh_timeout": "30m",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -P now",
+
+            "boot_wait": "2s",
+            "boot_key_interval": "10ms",
+            "boot_command": [
+                "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"   
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "files/id_rsa.pub",
+            "destination": "/tmp/id_rsa.pub"
+        },
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/update.sh",
+                "scripts/setup-ssh.sh",
+                "scripts/setup-{{ user `db_type`}}.sh"
+            ]
+        }
+    ]
+}

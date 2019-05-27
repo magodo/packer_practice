@@ -1,0 +1,23 @@
+{
+    "variables":
+    {
+        "myvar": "packer-{{isotime \"2006-01-02 03:04:05\"}}"
+    },
+    "builders": [
+        {
+            "name": "foobar",
+            "type": "null",
+            "communicator": "none"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell-local",
+            "inline": ["echo {{ user `myvar`}}"]
+        },
+        {
+            "type": "shell-local",
+            "environment_vars": ["EXAMPLE={{ sed \"s/null/awesome/\" build_type}}"],
+            "inline": ["echo build_type is $EXAMPLE\n"]
+        }
+    ]}
